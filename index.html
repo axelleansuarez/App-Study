@@ -486,53 +486,7 @@ option{background:var(--ne-surface2);}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script>
-/* ===== Puente Apps Script -> fetch =====
-   Reemplaza google.script.run cuando la página corre fuera de Apps Script (GitHub Pages).
-   Si corre dentro de Apps Script, no hace nada. */
-(function(){
-  if (window.google && google.script && google.script.run) return;
-
-  // 1) Pegá acá la URL de tu implementación de Apps Script (termina en /exec)
-  var API_URL = 'https://script.google.com/macros/s/AKfycbwugEy43Ne1qJlTKO6btZbujj2BubDOPw3Js_PjFfcCLZUQ9Gnok7BzacdiMd5V4yFdeA/exec';
-
-  function token(){
-    var t = localStorage.getItem('api_token');
-    if(!t){ t = prompt('Clave de acceso:'); if(t) localStorage.setItem('api_token', t.trim()); }
-    return t || '';
-  }
-
-  function call(fn, args){
-    return fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},   // evita preflight CORS
-      body: JSON.stringify({fn: fn, args: args, token: token()})
-    })
-    .then(function(r){ return r.json(); })
-    .then(function(j){
-      if(!j.ok){
-        if(j.error === 'No autorizado') localStorage.removeItem('api_token');
-        throw new Error(j.error || 'Error de servidor');
-      }
-      return j.result;
-    });
-  }
-
-  function makeRunner(ok, fail){
-    return new Proxy({}, { get: function(_, name){
-      if(name === 'withSuccessHandler') return function(f){ return makeRunner(f, fail); };
-      if(name === 'withFailureHandler') return function(f){ return makeRunner(ok, f); };
-      return function(){
-        var args = Array.prototype.slice.call(arguments);
-        call(name, args).then(function(r){ if(ok) ok(r); })
-          .catch(function(e){ if(fail) fail(e); else console.error(name, e); });
-      };
-    }});
-  }
-
-  window.google = { script: { run: makeRunner(null, null) } };
-})();
-</script>
+<script src="puente.js?v=2"></script>
 </head>
 <body>
 <div id="loading">
